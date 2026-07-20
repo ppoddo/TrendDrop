@@ -1,0 +1,483 @@
+/*
+  트렌드 상세(/trend) 고유 레이아웃.
+  색·폰트·섀도우·라운드는 전부 globals.css의 전역 2테마 토큰을 사용한다.
+  (이 파일에는 테마 분기가 거의 없다 — 다크/웜은 토큰이 알아서 바뀐다.)
+*/
+
+.td {
+  /* 차트 색은 전역 토큰에서 파생 */
+  --chart-line: var(--accent);
+  --chart-fill: var(--accent-soft);
+  --chart-grid: var(--line);
+  --chart-dot: var(--accent);
+
+  --td-page-top: 56px;
+  --td-page-bottom: 128px;
+  --td-section-gap: 44px;
+  --td-panel-pad: 30px;
+  --td-hero-gap: clamp(48px, 6vw, 76px);
+
+  color: var(--text);
+}
+
+.td h1,
+.td h2,
+.td p,
+.td blockquote {
+  margin: 0;
+}
+
+.td ul,
+.td ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@keyframes td-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.td-content {
+  width: min(var(--app-w), calc(100% - 32px));
+  margin: 0 auto;
+  padding: var(--td-page-top) 0 var(--td-page-bottom);
+  animation: td-pop 0.44s var(--spring) both;
+}
+
+/* 상단바 */
+
+.td-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 40px;
+  font-size: 0.85rem;
+}
+
+.td-back {
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.td-back:hover {
+  color: var(--text);
+}
+
+.td-rank {
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.td-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--accent-2-soft);
+  color: var(--accent-3);
+  font-size: 0.78rem;
+}
+
+/* 히어로 */
+
+.td-hero {
+  margin-bottom: var(--td-hero-gap);
+}
+
+.td-kicker {
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-transform);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.td-title {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  line-height: 1.05;
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+
+.td-byline {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* 메트릭 스트립 */
+
+.td-metrics {
+  display: grid;
+  /* 720px 컬럼에서 4열, 더 좁아지면 자동으로 줄바꿈된다 */
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 14px;
+  margin-bottom: 48px;
+}
+
+.td-stat {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: transform 0.28s var(--spring), box-shadow 0.28s ease;
+}
+
+.td-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--accent-2);
+  opacity: 0.5;
+}
+
+.td-stat:first-child::before {
+  background: var(--accent);
+  opacity: 0.9;
+}
+
+.td-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.td-stat-value {
+  display: block;
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.td-stat-value em {
+  margin-left: 2px;
+  font-style: normal;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* 상승률: 컬러 pill + ▲ */
+.td-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.td-up::before {
+  content: "▲";
+  font-size: 0.7em;
+}
+
+.td-stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-transform);
+  color: var(--muted);
+}
+
+/* 패널 */
+
+.td-panel {
+  padding: var(--td-panel-pad);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  margin-bottom: var(--td-section-gap);
+  box-shadow: var(--shadow);
+  transition: transform 0.28s var(--spring), box-shadow 0.28s ease, border-color 0.2s ease;
+}
+
+.td-panel:hover {
+  transform: translateY(-4px);
+  border-color: var(--glow-line);
+  box-shadow: var(--shadow-hover);
+}
+
+.td-h2 {
+  font-size: 1.05rem;
+  margin: 0 0 22px;
+}
+
+/* 섹션 헤딩 앞 accent tick (웜에서는 완화) */
+.td-h2::before {
+  content: "▍";
+  margin-right: 8px;
+  color: var(--accent);
+}
+
+:root[data-theme="warm"] .td-h2::before {
+  content: none;
+}
+
+.td-eyebrow {
+  margin: 0 0 12px;
+  font-size: 0.74rem;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-transform);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.td-summary {
+  margin: 0 0 24px;
+  line-height: 1.78;
+}
+
+.td-reasons li {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+
+.td-reasons li:first-child {
+  border-top: none;
+}
+
+.td-reason-source {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: var(--label-spacing);
+  color: var(--accent-3);
+}
+
+.td-reasons p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 차트 */
+
+.td-spark {
+  width: 100%;
+}
+
+.td-spark-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.td-spark-grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.td-spark-axis {
+  fill: var(--muted);
+  font-size: 8px;
+  font-family: var(--font-num);
+  opacity: 0.6;
+}
+
+.td-spark-area {
+  fill: var(--chart-fill);
+  stroke: none;
+}
+
+.td-spark-line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.td-spark-dot {
+  fill: var(--chart-dot);
+  filter: drop-shadow(0 0 4px var(--glow-line));
+}
+
+.td-spark-days {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* 관련 콘텐츠 */
+
+.td-related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.td-related-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow);
+  transition: transform 0.28s var(--spring), box-shadow 0.28s ease, border-color 0.2s ease;
+}
+
+.td-related-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--glow-line);
+  box-shadow: var(--shadow-hover);
+}
+
+.td-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #666, #333);
+}
+
+.td-thumb-instagram {
+  background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+}
+
+.td-thumb-youtube {
+  background: linear-gradient(135deg, #ff3b3b, #8f0d0d);
+}
+
+.td-thumb-facebook {
+  background: linear-gradient(135deg, #4267b2, #1a3d7c);
+}
+
+.td-related-body {
+  padding: 14px;
+}
+
+.td-related-platform {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-transform);
+  color: var(--muted);
+}
+
+.td-related-title {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.td-related-metric {
+  margin: 0;
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* 연관 키워드 */
+
+.td-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.td-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* 감지 채널 (라이브 dot) */
+
+.td-channel-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.td-channel-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  font-size: 0.84rem;
+}
+
+.td-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: td-live-pulse 1.6s ease-out infinite;
+}
+
+.td-footer {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* 반응형 */
+
+@media (max-width: 720px) {
+  .td {
+    --td-page-top: 24px;
+    --td-page-bottom: 64px;
+    --td-section-gap: 32px;
+    --td-panel-pad: 22px;
+    --td-hero-gap: 36px;
+  }
+
+  .td-topbar {
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .td-metrics {
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 32px;
+  }
+
+  .td-related-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .td-reasons li {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-content,
+  .td-live-dot {
+    animation: none;
+  }
+}

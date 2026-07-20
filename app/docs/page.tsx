@@ -8,19 +8,6 @@ export default function DocsIndexPage() {
   return (
     <div className="page-shell">
       <header className="hero docs-hero">
-        <nav className="topbar">
-          <div className="brand">
-            <span className="brand-mark">TD</span>
-            <div>
-              <p className="brand-name">TrendDrop</p>
-              <p className="brand-sub">Research library</p>
-            </div>
-          </div>
-          <Link className="ghost-button link-button" href="/">
-            홈으로 돌아가기
-          </Link>
-        </nav>
-
         <section className="hero-grid docs-hero-grid">
           <div className="hero-copy">
             <p className="eyebrow">PROJECT NOTES</p>
