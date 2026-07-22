@@ -48,6 +48,15 @@ const DocsIcon = (
   </svg>
 );
 
+const ExploreIcon = (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
+
 const LabIcon = (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
@@ -64,6 +73,7 @@ const LabIcon = (
 /** 실제 존재하는 라우트만 — 죽은 링크를 만들지 않는다. (/api-lab은 팀이 추가) */
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "랭킹", icon: RankIcon },
+  { href: "/explore", label: "탐색", icon: ExploreIcon },
   { href: "/trend", label: "트렌드", icon: TrendIcon },
   { href: "/api-lab", label: "랩", icon: LabIcon },
   { href: "/docs", label: "문서", icon: DocsIcon },

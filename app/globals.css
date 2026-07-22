@@ -2096,3 +2096,337 @@ body {
   margin-inline: auto;
 }
 
+/* ============================================================ */
+/* /explore — 카테고리 히트맵 + A/B 비교 (append only)          */
+/* ============================================================ */
+
+.explore {
+  display: grid;
+  gap: 20px;
+}
+
+.explore-header {
+  display: grid;
+  gap: 4px;
+}
+
+.explore-title {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  line-height: 1.1;
+}
+
+.explore-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.explore-panel {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.explore-panel-head {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 16px;
+}
+
+.explore-eyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-transform);
+  color: var(--accent);
+}
+
+.explore-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* --- 히트맵 --- */
+.heat-scroll {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+}
+
+.heat-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.heat-corner,
+.heat-rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  text-align: left;
+}
+
+.heat-corner {
+  width: 84px;
+  min-width: 84px;
+}
+
+.heat-colhead {
+  padding: 6px 4px;
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.heat-colhead.is-now {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.heat-rowhead {
+  padding: 0 10px 0 0;
+}
+
+.heat-cat {
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.heat-cat:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.heat-cat:focus-visible,
+.compare-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.heat-cell {
+  position: relative;
+  width: 34px;
+  min-width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.heat-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+/* --- A/B 비교 --- */
+.compare-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.compare-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+}
+
+.compare-pick-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--on-accent);
+}
+
+.compare-pick.is-a .compare-pick-tag {
+  background: var(--accent);
+}
+
+.compare-pick.is-b .compare-pick-tag {
+  background: var(--accent-2);
+}
+
+.compare-select {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.compare-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.compare-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.compare-axis {
+  fill: var(--muted);
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-size: 8px;
+}
+
+.compare-axis.is-x {
+  font-size: 9px;
+}
+
+.compare-path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.compare-entry {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.compare-end {
+  fill: currentColor;
+}
+
+.compare-series-a {
+  color: var(--accent);
+}
+
+.compare-series-b {
+  color: var(--accent-2);
+}
+
+/* 웜 테마에서 --accent-2(밝은 노랑)는 크림 배경 대비가 약해 B 시리즈만 틸로 */
+:root[data-theme="warm"] .compare-series-b {
+  color: var(--accent-3);
+}
+
+:root[data-theme="warm"] .compare-pick.is-b .compare-pick-tag,
+:root[data-theme="warm"] .compare-legend-item.is-b .compare-swatch {
+  background: var(--accent-3);
+}
+
+.compare-legend {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compare-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+
+.compare-swatch {
+  width: 22px;
+  height: 4px;
+  flex: none;
+  border-radius: 999px;
+}
+
+.compare-legend-item.is-a .compare-swatch {
+  background: var(--accent);
+}
+
+.compare-legend-item.is-b .compare-swatch {
+  background: var(--accent-2);
+}
+
+.compare-legend-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compare-legend-rank {
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.compare-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+  justify-content: flex-end;
+  font-family: var(--font-num);
+  font-variant-numeric: var(--num-variant);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.compare-delta.is-up {
+  color: var(--accent);
+}
+
+.compare-delta.is-down {
+  color: var(--down);
+}
+
+.compare-delta.is-new {
+  color: var(--accent-3);
+}
+
+.compare-delta.is-same {
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .compare-picks {
+    grid-template-columns: 1fr;
+  }
+}
+
