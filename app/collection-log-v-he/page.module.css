@@ -123,6 +123,43 @@
   color: var(--muted);
 }
 
+.apiLog {
+  margin-bottom: 36px;
+}
+
+.apiLogTableWrap {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.apiLogTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.apiLogTable th {
+  text-align: left;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 700;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.apiLogTable td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+
+.apiLogTable tr:last-child td {
+  border-bottom: none;
+}
+
 .empty code {
   background: var(--surface);
   border-radius: 6px;

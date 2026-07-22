@@ -45,6 +45,8 @@ export const vheCollectionRuns = pgTable("vhe_collection_runs", {
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   rawSignalCount: integer("raw_signal_count"),
   keywordCount: integer("keyword_count"),
+  // 임시 로그: 이 실행 동안 외부 트렌드 API를 몇 시에 호출했는지 [{ api, calledAt }] 형태로 기록
+  apiCallLog: jsonb("api_call_log"),
 });
 
 export const vheRawSignals = pgTable(

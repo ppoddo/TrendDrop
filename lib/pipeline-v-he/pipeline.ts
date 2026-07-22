@@ -42,15 +42,25 @@ function sourceLabelFor(item: RankedKeyword) {
   return `YouTube · ${item.sourceTypes.join(", ")}`;
 }
 
+type ApiCallLogEntry = { api: string; calledAt: string };
+
+function makeCallLogger(log: ApiCallLogEntry[]) {
+  return (api: string) => {
+    log.push({ api, calledAt: new Date().toISOString() });
+  };
+}
+
 // YouTube mostPopular(전체 + 카테고리 5종)을 모아 videoId 기준으로 합치고,
 // 확산 속도 상위 10개 영상의 댓글을 가져온다 (bottom-up 후보 발굴용 원문 소스).
-async function collectYoutubeSignals() {
+async function collectYoutubeSignals(logCall: (api: string) => void) {
   const merged = new Map<string, TrendVideo>();
 
+  logCall("YouTube mostPopular · 전체");
   const whole = await fetchMostPopular(undefined, "전체").catch(() => []);
   for (const video of whole) merged.set(video.videoId, video);
 
   for (const category of trendCategories) {
+    logCall(`YouTube mostPopular · ${category.label}`);
     const videos = await fetchMostPopular(category.id, category.label).catch(() => []);
     for (const video of videos) {
       const existing = merged.get(video.videoId);
@@ -63,6 +73,7 @@ async function collectYoutubeSignals() {
   const topByVelocity = [...videos].sort((a, b) => b.viewsPerHour - a.viewsPerHour).slice(0, 10);
 
   for (const video of topByVelocity) {
+    logCall("YouTube commentThreads");
     commentsByVideo.set(video.videoId, await fetchTopComments(video.videoId).catch(() => []));
   }
 
@@ -90,6 +101,10 @@ export async function collectTrendPipelineVHe({ geo = "KR", limit = 15 } = {}) {
     .values({ name: "Google News RSS", kind: "google-news" })
     .onConflictDoUpdate({ target: vheSources.name, set: { kind: "google-news" } });
 
+  const apiCallLog: ApiCallLogEntry[] = [];
+  const logCall = makeCallLogger(apiCallLog);
+
+  logCall("Google Trends RSS");
   const trends = await fetchGoogleTrendingKeywords({ geo, limit: 20 }).catch(() => []);
   const trendingSearches = trends.map((trend) => ({
     term: trend.term,
@@ -98,7 +113,7 @@ export async function collectTrendPipelineVHe({ geo = "KR", limit = 15 } = {}) {
   }));
 
   const { videos, commentsByVideo } = hasYoutubeApiKey()
-    ? await collectYoutubeSignals()
+    ? await collectYoutubeSignals(logCall)
     : { videos: [] as TrendVideo[], commentsByVideo: new Map<string, VideoComment[]>() };
 
   const signals = buildRawSignals({ videos, commentsByVideo, trendingSearches });
@@ -132,6 +147,7 @@ export async function collectTrendPipelineVHe({ geo = "KR", limit = 15 } = {}) {
       .onConflictDoUpdate({ target: vheKeywords.term, set: { category, sourceId } })
       .returning();
 
+    logCall(`Google News RSS · ${item.term}`);
     const news = await searchGoogleNewsRss(item.term).catch(() => []);
 
     await db.insert(vheTrendSnapshots).values({
@@ -164,7 +180,7 @@ export async function collectTrendPipelineVHe({ geo = "KR", limit = 15 } = {}) {
 
   await db
     .update(vheCollectionRuns)
-    .set({ finishedAt: new Date(), rawSignalCount: signals.length, keywordCount: ranked.length })
+    .set({ finishedAt: new Date(), rawSignalCount: signals.length, keywordCount: ranked.length, apiCallLog })
     .where(eq(vheCollectionRuns.id, run.id));
 
   return { geo, runId: run.id, rawSignals: signals.length, selected: ranked.length, items: results };

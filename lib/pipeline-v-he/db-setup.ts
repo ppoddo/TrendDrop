@@ -40,6 +40,8 @@ export async function ensureVHeTables() {
     );
   `);
 
+  await db.execute(sql`alter table vhe_collection_runs add column if not exists api_call_log jsonb;`);
+
   await db.execute(sql`
     create table if not exists vhe_raw_signals (
       id integer generated always as identity primary key,

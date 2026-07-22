@@ -1,51 +1,78 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
-
-import { getDb, isDbConfigured } from "@/db";
-import { vheCollectionRuns, vheKeywords, vheTrendSnapshots } from "@/lib/pipeline-v-he/schema";
 
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
+type VHeKeywordRow = {
+  term: string;
+  category: string;
+  score: number | null;
+  mentions: string | null;
+  source: string | null;
+  rank: number | null;
+  runId: number;
+  capturedAt: string;
+  summary: string | null;
+};
+
+type ApiCallLogEntry = { api: string; calledAt: string };
+
+type VHeRun = {
+  id: number;
+  geo: string;
+  startedAt: string;
+  finishedAt: string | null;
+  rawSignalCount: number | null;
+  keywordCount: number | null;
+  apiCallLog: ApiCallLogEntry[] | null;
+};
+
+type VHeApiResponse = {
+  configured: boolean;
+  runs: VHeRun[];
+  latestRunId: number | null;
+  keywords: VHeKeywordRow[];
+};
+
+// 페이지는 DB를 직접 조회하지 않고 백엔드 API(GET /api/admin/collect/pipeline-v-he)에서 값을 가져온다.
+async function fetchLatestCollection(): Promise<VHeApiResponse> {
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const response = await fetch(`${base}/api/admin/collect/pipeline-v-he`, { cache: "no-store" });
+
+  if (!response.ok) {
+    return { configured: false, runs: [], latestRunId: null, keywords: [] };
+  }
+
+  return response.json();
+}
+
+function summarizeApiCallLog(log: ApiCallLogEntry[] | null) {
+  if (!log || log.length === 0) return [];
+
+  const byApi = new Map<string, { count: number; first: string; last: string }>();
+  for (const entry of log) {
+    const existing = byApi.get(entry.api);
+    if (!existing) {
+      byApi.set(entry.api, { count: 1, first: entry.calledAt, last: entry.calledAt });
+    } else {
+      existing.count += 1;
+      existing.last = entry.calledAt;
+    }
+  }
+
+  return [...byApi.entries()]
+    .map(([api, stat]) => ({ api, ...stat }))
+    .sort((a, b) => a.first.localeCompare(b.first));
+}
+
 export default async function CollectionLogVHePage() {
-  const rows = isDbConfigured()
-    ? await getDb()
-        .select({
-          term: vheKeywords.term,
-          category: vheKeywords.category,
-          score: vheTrendSnapshots.score,
-          mentions: vheTrendSnapshots.growthRate,
-          source: vheTrendSnapshots.sourceLabel,
-          rank: vheTrendSnapshots.rank,
-          runId: vheTrendSnapshots.runId,
-          capturedAt: vheTrendSnapshots.capturedAt,
-          summary: vheTrendSnapshots.summary,
-        })
-        .from(vheTrendSnapshots)
-        .innerJoin(vheKeywords, eq(vheTrendSnapshots.keywordId, vheKeywords.id))
-        .orderBy(desc(vheTrendSnapshots.capturedAt), desc(vheTrendSnapshots.score))
-        .limit(60)
-    : [];
+  const { configured, runs, latestRunId, keywords: rows } = await fetchLatestCollection();
 
-  const runs = isDbConfigured()
-    ? await getDb()
-        .select({
-          id: vheCollectionRuns.id,
-          geo: vheCollectionRuns.geo,
-          startedAt: vheCollectionRuns.startedAt,
-          finishedAt: vheCollectionRuns.finishedAt,
-          rawSignalCount: vheCollectionRuns.rawSignalCount,
-          keywordCount: vheCollectionRuns.keywordCount,
-        })
-        .from(vheCollectionRuns)
-        .orderBy(desc(vheCollectionRuns.startedAt))
-        .limit(8)
-    : [];
-
-  const latestRunId = runs[0]?.id;
   const latestRows = latestRunId ? rows.filter((row) => row.runId === latestRunId) : rows;
   const maxScore = Math.max(1, ...latestRows.map((row) => row.score ?? 0));
+  const latestRun = runs.find((run) => run.id === latestRunId);
+  const apiCallSummary = summarizeApiCallLog(latestRun?.apiCallLog ?? null);
 
   return (
     <main className={styles.page}>
@@ -62,7 +89,7 @@ export default async function CollectionLogVHePage() {
         <span className={styles.countBadge}>총 {rows.length}건 수집</span>
       </div>
 
-      {isDbConfigured() && runs.length > 0 && (
+      {configured && runs.length > 0 && (
         <>
           <div className={styles.runStrip}>
             {runs.map((run) => (
@@ -72,7 +99,7 @@ export default async function CollectionLogVHePage() {
                   RUN #{run.id} · {run.geo}
                 </div>
                 <div className={styles.runMeta}>
-                  {run.startedAt.toLocaleString("ko-KR")}
+                  {new Date(run.startedAt).toLocaleString("ko-KR")}
                   <br />
                   원문 신호 {run.rawSignalCount ?? "-"}건 · 키워드 {run.keywordCount ?? "-"}건
                   {!run.finishedAt && " · 진행 중"}
@@ -86,7 +113,35 @@ export default async function CollectionLogVHePage() {
         </>
       )}
 
-      {!isDbConfigured() ? (
+      {apiCallSummary.length > 0 && (
+        <div className={styles.apiLog}>
+          <p className={styles.kicker}>API 호출 기록 (최신 실행, 임시)</p>
+          <div className={styles.apiLogTableWrap}>
+            <table className={styles.apiLogTable}>
+              <thead>
+                <tr>
+                  <th>API</th>
+                  <th>호출 횟수</th>
+                  <th>첫 호출</th>
+                  <th>마지막 호출</th>
+                </tr>
+              </thead>
+              <tbody>
+                {apiCallSummary.map((stat) => (
+                  <tr key={stat.api}>
+                    <td>{stat.api}</td>
+                    <td>{stat.count}회</td>
+                    <td>{new Date(stat.first).toLocaleTimeString("ko-KR")}</td>
+                    <td>{new Date(stat.last).toLocaleTimeString("ko-KR")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {!configured ? (
         <div className={styles.empty}>DATABASE_URL을 설정하면 수집 기록이 표시됩니다.</div>
       ) : rows.length === 0 ? (
         <div className={styles.empty}>
@@ -98,7 +153,7 @@ export default async function CollectionLogVHePage() {
             const score = row.score ?? 0;
             const fillWidth = Math.max(6, Math.round((score / maxScore) * 100));
             return (
-              <div key={`${row.term}-${row.capturedAt.toISOString()}-${index}`} className={styles.card}>
+              <div key={`${row.term}-${row.capturedAt}-${index}`} className={styles.card}>
                 <div className={styles.cardTop}>
                   <span className={`${styles.rankBadge} ${row.rank && row.rank <= 3 ? styles.top : ""}`}>
                     {row.rank ?? "-"}
@@ -117,7 +172,7 @@ export default async function CollectionLogVHePage() {
                 </div>
                 <span className={styles.sourcePill}>{row.source ?? "-"}</span>
                 <p className={styles.summary}>{row.summary ?? "요약 없음"}</p>
-                <span className={styles.capturedAt}>{row.capturedAt.toLocaleString("ko-KR")}</span>
+                <span className={styles.capturedAt}>{new Date(row.capturedAt).toLocaleString("ko-KR")}</span>
               </div>
             );
           })}
